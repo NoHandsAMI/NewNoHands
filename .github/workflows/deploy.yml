@@ -16,7 +16,10 @@ jobs:
       - name: Set up Packer
         uses: hashicorp/setup-packer@v2
 
-      - name: Initialize and Build AMI
+      - name: Packer init
+        run: packer init packer/aws-ubuntu.pkr.hcl
+
+      - name: Build AMI with Packer
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -24,7 +27,6 @@ jobs:
           VPC_ID: ${{ secrets.VPC_ID }}
           SUBNET_ID: ${{ secrets.SUBNET_ID }}
         run: |
-          packer init packer/aws-ubuntu.pkr.hcl
           packer build \
             -machine-readable \
             -var "vpc_id=$VPC_ID" \

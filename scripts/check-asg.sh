@@ -3,6 +3,7 @@
 ASG_NAME="NoHands_ASG2"
 
 EXISTING_ASG=$(aws autoscaling describe-auto-scaling-groups \
+  --region ap-northeast-2 \
   --auto-scaling-group-names "$ASG_NAME" \
   --query "AutoScalingGroups[*].AutoScalingGroupName" \
   --output text)
