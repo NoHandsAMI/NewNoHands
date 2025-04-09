@@ -28,8 +28,8 @@ source "amazon-ebs" "ubuntu" {
   source_ami    = "ami-0c1989c90aa86e7cf"
   ssh_username  = "ubuntu"
 
-  vpc_id        = "{{user `vpc_id`}}"
-  subnet_id     = "{{user `subnet_id`}}"
+  vpc_id        = var.vpc_id
+  subnet_id     = var.subnet_id
   associate_public_ip_address = true
 }
 
