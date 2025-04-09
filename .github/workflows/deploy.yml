@@ -66,6 +66,11 @@ jobs:
 
       - name: Rolling update ASG if exists
         if: env.ASG_EXISTS == 'true'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ap-northeast-2
+          NEW_AMI_ID_FROM_ENV: ${{ env.NEW_AMI_ID_FROM_ENV }}
         run: bash scripts/rolling-update.sh
 
       - name: Skip ASG update (ASG not found)
