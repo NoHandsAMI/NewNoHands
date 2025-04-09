@@ -1,0 +1,48 @@
+name: Build and Deploy NoHands AMI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Packer
+        uses: hashicorp/setup-packer@v2
+
+      - name: Initialize and Build AMI
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          VPC_ID: ${{ secrets.VPC_ID }}
+          SUBNET_ID: ${{ secrets.SUBNET_ID }}
+        run: |
+          packer init packer/aws-ubuntu.pkr.hcl
+          packer build \
+            -machine-readable \
+            -var "vpc_id=$VPC_ID" \
+            -var "subnet_id=$SUBNET_ID" \
+            packer/aws-ubuntu.pkr.hcl | tee packer_output.log
+
+      - name: Extract new AMI ID from build log
+        run: |
+          AMI_ID=$(grep 'artifact,0,id' packer_output.log | cut -d, -f6 | cut -d: -f2)
+          echo "NEW_AMI_ID_FROM_ENV=$AMI_ID" >> $GITHUB_ENV
+          echo "Built AMI ID: $AMI_ID"
+
+      - name: Check if ASG exists
+        run: bash scripts/check-asg.sh
+
+      - name: Rolling update ASG if exists
+        if: env.ASG_EXISTS == 'true'
+        run: bash scripts/rolling-update.sh
+
+      - name: Skip ASG update (ASG not found)
+        if: env.ASG_EXISTS == 'false'
+        run: echo "No ASG found. Only AMI was created."
