@@ -40,6 +40,10 @@ jobs:
           echo "Built AMI ID: $AMI_ID"
 
       - name: Check if ASG exists
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ap-northeast-2
         run: bash scripts/check-asg.sh
 
       - name: Rolling update ASG if exists
